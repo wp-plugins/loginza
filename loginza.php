@@ -20,7 +20,7 @@ Copyright 2010 Sergey Arsenichev  (email: s.arsenichev@protechs.ru)
 Plugin Name: loginza
 Plugin URI: http://loginza.ru/wp-plugin
 Description: Плагин позволяет использовать аккаунты популярных web сайтов (Вконтакте, Yandex, Google, и тп. и OpenID) для авторизации в блоге. Разработан на основе сервиса Loginza.
-Version: 1.0
+Version: 1.0.1
 Author: Sergey Arsenichev
 Author URI: http://loginza.ru
 */
@@ -100,17 +100,23 @@ function loginza_ui_user_profile () {
 	if(!$user->ID) {
 		return false;
 	}
-	
+	$tpl_data = array();
 	if ($user->{LOGINZA_WP_USER_META_IDENTITY}) {
 		$tpl_data = array(
 			'identity' => $user->{LOGINZA_WP_USER_META_IDENTITY},
 			'provider' => $user->{LOGINZA_WP_USER_META_PROVIDER},
 			'provider_ico' => loginza_get_provider_ico ($user->{LOGINZA_WP_USER_META_IDENTITY}),
-			'returnto_url' => urlencode( get_option('siteurl').'/?loginza_mapping='.$user->ID.'&loginza_return='.urlencode($_SERVER['REQUEST_URI']) ),
-  			'loginza_host' => LOGINZA_SERVER_HOST
 		);
-		echo loginza_fetch_template('html_edit_profile.tpl', $tpl_data);
+	} else {
+		$tpl_data = array(
+			'identity' => '<i>(пусто)</i>',
+			'provider' => '',
+			'provider_ico' => '',
+		);
 	}
+	$tpl_data['returnto_url'] = urlencode( get_option('siteurl').'/?loginza_mapping='.$user->ID.'&loginza_return='.urlencode($_SERVER['REQUEST_URI']) );
+	$tpl_data['loginza_host'] = LOGINZA_SERVER_HOST;
+	echo loginza_fetch_template('html_edit_profile.tpl', $tpl_data);
 }
 /**
  * Фильтр вывода автора комментария
@@ -215,7 +221,7 @@ function loginza_fetch_template ($template, $data=null) {
  * @param array $data
  * @return array
  */
-function loginza_fetch_template_data (Array $data) {
+function loginza_fetch_template_data ($data) {
 	$result = array();
 	foreach ($data as $k => $v) {
 		$result["%$k%"] = $v;
@@ -249,8 +255,13 @@ function loginza_token_request () {
 	
 	// если юзер авторизирован, прикрепляем к нету его идентификатор
 	if ($WpUser->ID && @$_REQUEST['loginza_mapping'] == $WpUser->ID) {
-		// прикрепляем к нему идентификатор
-		LoginzaWpUser::setIdentity($WpUser->ID, $profile);
+		// проверяем если данный идентификатор в базе
+		$wpuid = LoginzaWpUser::getUserByIdentity($profile['identity'], $wpdb);
+		// такой идентификатор не прикреплен ни к кому
+		if (!$wpuid) {
+			// прикрепляем к нему идентификатор
+			LoginzaWpUser::setIdentity($WpUser->ID, $profile);
+		}
 	} elseif (!$WpUser->ID) {
 		// проверяем если данный идентификатор в базе
 		$wpuid = LoginzaWpUser::getUserByIdentity($profile['identity'], $wpdb);

@@ -141,6 +141,12 @@ class LoginzaWpUser {
 	}
 	private static function shotmd5($str) {
 		$str = md5($str);
+		
+		// проверка необходимых функций
+		if (!function_exists('bcadd')) {
+			return $str;
+		}
+		
 	    $base16 = '0123456789abcdef';
 	    $base62 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	    if (ereg('^['.$base16.']+$', $str)) {
