@@ -22,8 +22,8 @@ Stable tag: 1.0.1
 
 == Installation ==
 
-1. Copy the `logina` directory and its contents to your `/wp-content/plugins/` directory.
-2. Activate the logina plugin through the 'Plugins' menu in WordPress
+1. Copy the `loginza` directory and its contents to your `/wp-content/plugins/` directory.
+2. Activate the loginza plugin through the 'Plugins' menu in WordPress
 
 == Screenshots ==
 
