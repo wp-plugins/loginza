@@ -50,7 +50,7 @@ add_action('wp_footer', 'loginza_ui_comment_form');
 add_action('login_head', 'loginza_ui_login_form');
 add_action('show_user_profile', 'loginza_ui_user_profile');
 add_action('parse_request', 'loginza_token_request'); 
-add_filter('get_comment_author', 'loginza_comment_author_icon');
+add_filter('get_comment_author_link', 'loginza_comment_author_icon');
 add_filter('get_avatar', 'loginza_comment_author_avatar');
 add_filter('the_content', 'loginza_form_tag');
 
