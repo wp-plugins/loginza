@@ -187,7 +187,8 @@ function loginza_get_provider_ico ($identity) {
 	'wordpress.com' => 'wordpress.png',
 	'blogspot.com' => 'blogger.png',
 	'diary.ru' => 'diary',
-	'bestpersons.ru' => 'bestpersons.png'
+	'bestpersons.ru' => 'bestpersons.png',
+	'facebook.com' => 'facebook.png'
 	);
 	
 	if (preg_match('/^https?:\/\/([^\.]+\.)?([a-z0-9\-\.]+\.[a-z]{2,5})/i', $identity, $matches)) {
