@@ -20,7 +20,7 @@ Copyright 2010 Sergey Arsenichev  (email: s.arsenichev@protechs.ru)
 Plugin Name: loginza
 Plugin URI: http://loginza.ru/wp-plugin
 Description: Плагин позволяет использовать аккаунты популярных web сайтов (Вконтакте, Yandex, Google, и тп. и OpenID) для авторизации в блоге. Разработан на основе сервиса Loginza.
-Version: 1.0.1
+Version: 1.0.2
 Author: Sergey Arsenichev
 Author URI: http://loginza.ru
 */
@@ -30,6 +30,7 @@ define('LOGINZA_API_AUTHINFO', 'http://'.LOGINZA_SERVER_HOST.'/api/authinfo');
 define('LOGINZA_HOME_DIR', dirname(dirname(dirname(dirname(__FILE__)))).'/');
 define('LOGINZA_PLUGIN_DIR', realpath(dirname(__FILE__)).'/');
 define('LOGINZA_TEMPLATES_DIR',LOGINZA_PLUGIN_DIR.'templates/');
+define('LOGINZA_FORM_TAG', 'loginza');
 
 // рабочие классы
 require_once LOGINZA_PLUGIN_DIR.'LoginzaWpUser.class.php';
@@ -51,6 +52,7 @@ add_action('show_user_profile', 'loginza_ui_user_profile');
 add_action('parse_request', 'loginza_token_request'); 
 add_filter('get_comment_author', 'loginza_comment_author_icon');
 add_filter('get_avatar', 'loginza_comment_author_avatar');
+add_filter('the_content', 'loginza_form_tag');
 
 /**
  * Модификация интерфейса WP
@@ -198,6 +200,29 @@ function loginza_get_provider_ico ($identity) {
 		}
 	}
 	return '<img src="'.$icon_dir.'openid.png" alt="OpenID" align="top" class="loginza_provider_ico"/>';
+}
+/**
+ * Обработка тегов для вставки авторизации Loginza в страницы блога
+ * Доступные теги:
+ * [loginza]текст ссылки[/loginza]
+ * [loginza:iframe]
+ * [loginza:icons]
+ *
+ * @param string $message Содержимое страницы
+ * @return string Содержимое страницы после обработки тегов
+ */
+function loginza_form_tag ($message) {
+	if (!empty($message)) {
+		$tpl_data = array ('loginza_host' => LOGINZA_SERVER_HOST, 'returnto_url' => urlencode(get_option('siteurl')));
+		$message .= loginza_fetch_template('html_widget_js.tpl', $tpl_data);
+		// [loginza]текст ссылки[/loginza]
+		$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\](.+)\[\/'.LOGINZA_FORM_TAG.'\]/is', '<a href="http://'.LOGINZA_SERVER_HOST.'/api/widget?token_url='.$tpl_data['returnto_url'].'" class="loginza">\1</a>', $message);
+		// [loginza:iframe]
+		$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\:iframe\]/is', loginza_fetch_template('html_iframe_form.tpl', $tpl_data), $message);
+		// [loginza:icons]
+		$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\:icons\]/is', loginza_fetch_template('html_icons_form.tpl', $tpl_data), $message);
+	}
+	return $message;
 }
 /**
  * Работа с шаблонами

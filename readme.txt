@@ -4,7 +4,7 @@ Donate link: http://loginza.ru/wp-plugin
 Tags: openid, vkontakte, yandex, google, loginza, Rambler, Mail.Ru, LiveJournal, authentication, авторизация
 Requires at least: 1.0
 Tested up to: 2.9.2
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 
 Плагин позволяет использовать аккаунты Вконтакте, Yandex, Google, OpenID и тп., для авторизации в блоге.
 
@@ -19,11 +19,18 @@ Stable tag: 1.0.1
 * Плагин умеет получать дополнительные данные о пользователе из прикрепленного аккаунта (если они переданы провайдером) для использования их в профиле пользователя WordPress;
 * Иконки провайдера в комментариях (около имени пользователя), визуально отображают через какую учетную запись вошел пользователь;
 * Поддерживаются следующие провайдеры авторизации: Yandex, VKontakte, Loginza, MyOpenID, Google, Flickr, Mail.Ru, Rambler, Webmoney, AOL, VeriSign.
+* Возможность вставки формы авторизации Loginza на любую страницу блога (используя template tag).
 
 == Installation ==
 
 1. Copy the `loginza` directory and its contents to your `/wp-content/plugins/` directory.
 2. Activate the loginza plugin through the 'Plugins' menu in WordPress
+
+== Frequently Asked Questions ==
+
+= Почему от некоторых пользователей Вконтакте не видны комментарии в блоге и админке? =
+
+Отключите плагин akismet, так как этот плагин помечает эти комментарии как спам.
 
 == Screenshots ==
 
@@ -33,6 +40,13 @@ Stable tag: 1.0.1
 4. Просмотр и редактирование профиля. Изменение прикрепленного аккаунта.
 
 == Changelog ==
+
+= 1.0.2 =
+* Добавлена возможность вставки формы авторизации Loginza на страницы блога.
+Чтобы вставить форму, нужно использовать в тексте страницы любые варианты тегов разметки (template tag):
+1. [loginza]текст ссылки[/loginza] Вставляет ссылку, нажатие которой открывает виджет авторизации;
+2. [loginza:iframe] Добавляет блок авторизации, аналогичный используемому на странице /wp-login.php;
+3. [loginza:icons] Добавляет набор иконок провайдеров (как в блоке комментарием).
 
 = 1.0.1 =
 * Добавленна ссылка прикрепления доп.аккаунта в профиль пользователя WordPress;

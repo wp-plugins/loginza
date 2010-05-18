@@ -1,5 +1,5 @@
 <style>
-a.loginza:hover, a.loginza {text-decoration:none;}
+a.loginza:hover {text-decoration:none;}
 a.loginza img {border:0px;margin-right:3px;}
 </style>
 <script src="http://%loginza_host%/js/widget.js" type="text/javascript"></script>
@@ -13,5 +13,7 @@ loginza_auth.innerHTML = 'Также Вы можете войти использ
 	'<img src="/wp-content/plugins/loginza/img/openid.png" alt="OpenID" title="OpenID"/>&nbsp;<img src="/wp-content/plugins/loginza/img/webmoney.png" alt="WebMoney" title="WebMoney"/>&nbsp;'+
 	'</a>';
 var commentForm = document.getElementById("comment");
-commentForm.parentNode.insertBefore(loginza_auth, commentForm);
+if (commentForm) {
+	commentForm.parentNode.insertBefore(loginza_auth, commentForm);
+}
 </script>
