@@ -1,7 +1,7 @@
 === Loginza - Плагин авторизации ВКонтакте, OpenID, Yandex, Google и др. ===
 Contributors: arsenichev
 Donate link: http://loginza.ru/wp-plugin
-Tags: openid, vkontakte, yandex, google, loginza, Rambler, Mail.Ru, LiveJournal, authentication, авторизация
+Tags: openid, vkontakte, yandex, google, loginza, facebook, Rambler, Mail.Ru, LiveJournal, authentication, авторизация
 Requires at least: 1.0
 Tested up to: 2.9.2
 Stable tag: 1.0.3
