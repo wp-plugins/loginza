@@ -268,10 +268,10 @@ function loginza_token_request () {
 	
 	// получение профиля
 	$profile = file_get_contents(LOGINZA_API_AUTHINFO.'?token='.$_POST['token']);
-	$profile = json_decode($profile, true);
+	$profile = json_decode($profile);
 	
 	// проверка на ошибки
-	if (!is_array($profile) || !empty($profile['error_message']) || !empty($profile['error_type'])) {
+	if (!is_object($profile) || !empty($profile->error_message) || !empty($profile->error_type)) {
 		return;
 	}
 	
@@ -281,7 +281,7 @@ function loginza_token_request () {
 	// если юзер авторизирован, прикрепляем к нету его идентификатор
 	if ($WpUser->ID && @$_REQUEST['loginza_mapping'] == $WpUser->ID) {
 		// проверяем если данный идентификатор в базе
-		$wpuid = LoginzaWpUser::getUserByIdentity($profile['identity'], $wpdb);
+		$wpuid = LoginzaWpUser::getUserByIdentity($profile->identity, $wpdb);
 		// такой идентификатор не прикреплен ни к кому
 		if (!$wpuid) {
 			// прикрепляем к нему идентификатор
@@ -289,7 +289,7 @@ function loginza_token_request () {
 		}
 	} elseif (!$WpUser->ID) {
 		// проверяем если данный идентификатор в базе
-		$wpuid = LoginzaWpUser::getUserByIdentity($profile['identity'], $wpdb);
+		$wpuid = LoginzaWpUser::getUserByIdentity($profile->identity, $wpdb);
 		
 		if (!$wpuid) {
 			// идентификатора нет, новый пользователь

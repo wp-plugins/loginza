@@ -30,69 +30,69 @@ class LoginzaWpUser {
 		$user_data = array();
 		
 		// Имя пользователя
-		$user_data['user_login'] = self::nicknameToLogin ($profile['nickname']);
+		$user_data['user_login'] = self::nicknameToLogin ($profile->nickname);
 		// проверяем передан ли никнайм и его занятость
 		if (!$user_data['user_login'] || self::loginExists ($user_data['user_login'])) {
-			$user_data['user_login'] = self::generateLogin ($profile['identity']);
+			$user_data['user_login'] = self::generateLogin ($profile->identity);
 		}
 		// Ник
-		if ($profile['nickname']) {
-			$user_data['user_nicename'] = $user_data['nickname'] = $profile['nickname'];
-		} elseif (!empty($profile['email']) && preg_match('/^(.+)\@/i', $profile['email'], $nickname)) {
+		if ($profile->nickname) {
+			$user_data['user_nicename'] = $user_data['nickname'] = $profile->nickname;
+		} elseif (!empty($profile->email) && preg_match('/^(.+)\@/i', $profile->email, $nickname)) {
 			$user_data['user_nicename'] = $user_data['nickname'] = $nickname[1];
 		} else {
-			$user_data['user_nicename'] = $user_data['nickname'] = self::nicknameToLogin ($profile['identity']);
+			$user_data['user_nicename'] = $user_data['nickname'] = self::nicknameToLogin ($profile->identity);
 		}
 		// Сайт
-		if (!empty($profile['web']['blog'])) {
-			$user_data['user_url'] = $profile['web']['blog'];
-		} elseif (!empty($profile['web']['default'])) {
-			$user_data['user_url'] = $profile['web']['default'];
+		if (!empty($profile->web->blog)) {
+			$user_data['user_url'] = $profile->web->blog;
+		} elseif (!empty($profile->web->default)) {
+			$user_data['user_url'] = $profile->web->default;
 		} else {
-			$user_data['user_url'] = $profile['identity'];
+			$user_data['user_url'] = $profile->identity;
 		}
 		// jabber
-		if ($profile['im']['jabber']) {
-			$user_data['jabber'] = $profile['im']['jabber'];
+		if ($profile->im->jabber) {
+			$user_data['jabber'] = $profile->im->jabber;
 		}
 		// description
-		if ($profile['biography']) {
-			$user_data['description'] = $profile['biography'];
+		if ($profile->biography) {
+			$user_data['description'] = $profile->biography;
 		}
 		// Отображать как
-		if ($profile['name']['full_name']) {
-			$user_data['display_name'] = $profile['name']['full_name'];
-			$name_parts = explode(" ", $profile['name']['full_name']);
+		if ($profile->name->full_name) {
+			$user_data['display_name'] = $profile->name->full_name;
+			$name_parts = explode(" ", $profile->name->full_name);
 			// имя и фамилия по умолчанию
 			$user_data['first_name'] = $name_parts[0];
 			$user_data['last_name'] = $name_parts[1];
-		} elseif ($profile['name']['first_name'] || $profile['name']['last_name']) {
-			$user_data['display_name'] = trim($profile['name']['first_name'].' '.$profile['name']['last_name']);
+		} elseif ($profile->name->first_name || $profile->name->last_name) {
+			$user_data['display_name'] = trim($profile->name->first_name.' '.$profile->name->last_name);
 		} elseif (!empty($user_data['nickname'])) {
 			$user_data['display_name'] = $user_data['nickname'];
 		} else {
-			$user_data['display_name'] = $profile['identity'];
+			$user_data['display_name'] = $profile->identity;
 		}
 		// Имя
-		if ($profile['name']['first_name']) {
-			$user_data['first_name'] = $profile['name']['first_name'];
+		if ($profile->name->first_name) {
+			$user_data['first_name'] = $profile->name->first_name;
 		}
 		// Фамилия
-		if ($profile['name']['last_name']) {
-			$user_data['last_name'] = $profile['name']['last_name'];
+		if ($profile->name->last_name) {
+			$user_data['last_name'] = $profile->name->last_name;
 		}
 		
 		// остальные данные
 		$user_data['user_pass'] = self::genetarePassword();
-		$user_data['user_email'] = $profile['email'];
+		$user_data['user_email'] = $profile->email;
 		
 		// создаем пользователя
 		$wp_id = wp_insert_user($user_data);
 		if ($wp_id) {
 			self::setIdentity($wp_id, $profile);
 			// если есть аватарка
-			if (!empty($profile['photo'])) {
-				update_usermeta($wp_id, LOGINZA_WP_USER_META_AVATAR, $profile['photo']);
+			if (!empty($profile->photo)) {
+				update_usermeta($wp_id, LOGINZA_WP_USER_META_AVATAR, $profile->photo);
 			}
 			/**
 			 * TODO
@@ -104,8 +104,8 @@ class LoginzaWpUser {
 		return $wp_id;
 	}
 	static function setIdentity ($wp_id, $profile) {
-		update_usermeta($wp_id, LOGINZA_WP_USER_META_IDENTITY, $profile['identity']);
-		update_usermeta($wp_id, LOGINZA_WP_USER_META_PROVIDER, $profile['provider']);
+		update_usermeta($wp_id, LOGINZA_WP_USER_META_IDENTITY, $profile->identity);
+		update_usermeta($wp_id, LOGINZA_WP_USER_META_PROVIDER, $profile->provider);
 	}
 	static function loginExists ($login) {
   		return (get_userdatabylogin($login) != false);
