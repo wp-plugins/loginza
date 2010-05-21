@@ -1,10 +1,10 @@
 === Loginza - Плагин авторизации ВКонтакте, OpenID, Yandex, Google и др. ===
 Contributors: arsenichev
 Donate link: http://loginza.ru/wp-plugin
-Tags: openid, vkontakte, yandex, google, loginza, facebook, Rambler, Mail.Ru, LiveJournal, authentication, авторизация
+Tags: openid, vkontakte, yandex, google, loginza, facebook, twitter, Rambler, Mail.Ru, LiveJournal, authentication, авторизация, вконтакте, widget
 Requires at least: 1.0
 Tested up to: 2.9.2
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 
 Плагин позволяет использовать аккаунты Вконтакте, Yandex, Google, OpenID и тп., для авторизации в блоге.
 
@@ -18,7 +18,7 @@ Stable tag: 1.0.3
 * Существующие пользователи могут прикрепить к своему WordPress аккаунту учетную запись ВКонтакте, Yandex, Google, Rambler, OpenID и тп., и в дальнейшем авторизироваться в блоге с помощью неё (не используя логин/пароль аккаунта WordPress);
 * Плагин умеет получать дополнительные данные о пользователе из прикрепленного аккаунта (если они переданы провайдером) для использования их в профиле пользователя WordPress;
 * Иконки провайдера в комментариях (около имени пользователя), визуально отображают через какую учетную запись вошел пользователь;
-* Поддерживаются следующие провайдеры авторизации: Yandex, VKontakte, Loginza, Facebook, MyOpenID, Google, Flickr, Mail.Ru, Rambler, Webmoney, AOL, VeriSign.
+* Поддерживаются следующие провайдеры авторизации: Yandex, VKontakte, Loginza, Facebook, Twitter, MyOpenID, Google, Flickr, Mail.Ru, Rambler, Webmoney, AOL, VeriSign.
 * Возможность вставки формы авторизации Loginza на любую страницу блога (используя template tag).
 
 == Installation ==
@@ -40,6 +40,10 @@ Stable tag: 1.0.3
 4. Просмотр и редактирование профиля. Изменение прикрепленного аккаунта.
 
 == Changelog ==
+
+= 1.0.4 =
+* Добавлена авторизация через Twitter;
+* В Loginza.API появилась поддержка Hybrid Protocol (OpenID+OAuth) для Google, что позволяет теперь получать больше данных из профиля Google Accounts (например: аватарку).
 
 = 1.0.3 =
 * Добавлена авторизация через Facebook;
