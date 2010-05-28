@@ -1,5 +1,16 @@
 <script type="text/javascript">
-window.onload = function() {
+// добавление обработчика события для объекта
+function loginzaAddEvent (obj, type, fn){
+	if (obj.addEventListener){
+	      obj.addEventListener( type, fn, false);
+	} else if(obj.attachEvent) {
+	      obj.attachEvent( "on"+type, fn );
+	} else {
+	      obj["on"+type] = fn;
+	}
+}
+// инициализация фиджета
+function loginza_init_widget () {
 	var loginza_wp_login = document.getElementById('loginform');
 	loginza_wp_login.style.width = "359px";
 	var loginza_loading = document.createElement("div");
@@ -8,7 +19,7 @@ window.onload = function() {
 	loginza_loading.style.marginTop = "112px";
 	loginza_loading.style.paddingBottom = "122px";
 	loginza_loading.style.textAlign = "center";
-	loginza_loading.innerHTML = '<img src="/wp-content/plugins/loginza/img/loading.gif" alt="Loading..."/>';
+	loginza_loading.innerHTML = '<img src="%img_dir%loading.gif" alt="Loading..."/>';
 	
 	var loginza_iframe = document.createElement("iframe");
 	loginza_iframe.id = "loginza_iframe";
@@ -18,10 +29,12 @@ window.onload = function() {
 	loginza_iframe.style.height = "300px";
 	loginza_iframe.scrolling = "no";
 	loginza_iframe.frameBorder = "no";
-	loginza_iframe.onload = function () {
-		this.style.display = "";
+	// обработка события загрузки iframe с формой авторизации
+	loginzaAddEvent(loginza_iframe, 'load', function () {
+		loginza_iframe.style.display = "";
 		loginza_loading.style.display = "none";
-	}
+	});
+	
 	var loginza_header = document.createElement("div");
 	loginza_header.id = "loginza_header";
 	loginza_header.innerHTML ="<h3>Или войдите используя Ваш логин и пароль:</h3><br/>";
@@ -30,4 +43,6 @@ window.onload = function() {
 	loginza_wp_login.insertBefore(loginza_iframe, loginza_wp_login.firstChild );
 	loginza_wp_login.insertBefore(loginza_loading, loginza_wp_login.firstChild );
 }
+// инициализация виджета
+loginzaAddEvent(window, 'load', loginza_init_widget);
 </script>

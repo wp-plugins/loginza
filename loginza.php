@@ -20,7 +20,7 @@ Copyright 2010 Sergey Arsenichev  (email: s.arsenichev@protechs.ru)
 Plugin Name: loginza
 Plugin URI: http://loginza.ru/wp-plugin
 Description: Плагин позволяет использовать аккаунты популярных web сайтов (Вконтакте, Yandex, Google и тп. и OpenID) для авторизации в блоге. Разработан на основе сервиса Loginza.
-Version: 1.0.4
+Version: 1.0.5
 Author: Sergey Arsenichev
 Author URI: http://loginza.ru
 */
@@ -45,6 +45,26 @@ if (file_exists(LOGINZA_HOME_DIR.'wp-load.php')) {
 }
 require_once(LOGINZA_HOME_DIR . 'wp-includes/registration.php');
 
+function loginza_json_support () {
+	if ( function_exists('json_decode') ) {
+		return true;
+	}
+	// загружаем библиотеку работы с JSON если она необходима
+	if (!class_exists('Services_JSON')) {
+		include_once( dirname( __FILE__ ) . '/JSON.php' );
+	}
+	return false;
+}
+
+// если нету поддержки json
+if ( !loginza_json_support() ) {
+	// декодирует json в объект/массив
+	function json_decode($data) {
+        $json = new Services_JSON();
+        return $json->decode($data);
+    }
+}
+
 // инициализация плагина
 add_action('wp_footer', 'loginza_ui_comment_form');
 add_action('login_head', 'loginza_ui_login_form');
@@ -67,7 +87,8 @@ function loginza_ui_comment_form () {
   	// данные для шаблона
   	$tpl_data = array(
   		'returnto_url' => urlencode( get_option('siteurl').$_SERVER['REQUEST_URI'] ),
-  		'loginza_host' => LOGINZA_SERVER_HOST
+  		'loginza_host' => LOGINZA_SERVER_HOST,
+  		'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/'
   	);
   	// модификация текущей формы авторизации
   	echo loginza_fetch_template('html_comment_login_form.tpl', $tpl_data);
@@ -87,7 +108,8 @@ function loginza_ui_login_form () {
 	// данные для шаблона
   	$tpl_data = array(
   		'returnto_url' => urlencode($return_to),
-  		'loginza_host' => LOGINZA_SERVER_HOST
+  		'loginza_host' => LOGINZA_SERVER_HOST,
+  		'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/'
   	);
 	echo loginza_fetch_template('html_main_login_form.tpl', $tpl_data);
 }
@@ -215,10 +237,14 @@ function loginza_get_provider_ico ($identity) {
  */
 function loginza_form_tag ($message) {
 	if (!empty($message)) {
-		$tpl_data = array ('loginza_host' => LOGINZA_SERVER_HOST, 'returnto_url' => urlencode(get_option('siteurl')));
+		$tpl_data = array (
+			'loginza_host' => LOGINZA_SERVER_HOST, 
+			'returnto_url' => urlencode(get_option('siteurl')),
+			'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/'
+		);
 		$message .= loginza_fetch_template('html_widget_js.tpl', $tpl_data);
 		// [loginza]текст ссылки[/loginza]
-		$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\](.+)\[\/'.LOGINZA_FORM_TAG.'\]/is', '<a href="http://'.LOGINZA_SERVER_HOST.'/api/widget?token_url='.$tpl_data['returnto_url'].'" class="loginza">\1</a>', $message);
+		$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\](.+)\[\/'.LOGINZA_FORM_TAG.'\]/is', '<a href="https://'.LOGINZA_SERVER_HOST.'/api/widget?token_url='.$tpl_data['returnto_url'].'" class="loginza">\1</a>', $message);
 		// [loginza:iframe]
 		$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\:iframe\]/is', loginza_fetch_template('html_iframe_form.tpl', $tpl_data), $message);
 		// [loginza:icons]

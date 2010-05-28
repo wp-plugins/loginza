@@ -1,13 +1,33 @@
 <script src="http://%loginza_host%/js/widget.js" type="text/javascript"></script>
 <script type="text/javascript">
-window.onload = function() {
+// добавление обработчика события для объекта
+function loginzaAddEvent (obj, type, fn){
+	if (obj.addEventListener){
+	      obj.addEventListener( type, fn, false);
+	} else if(obj.attachEvent) {
+	      obj.attachEvent( "on"+type, fn );
+	} else {
+	      obj["on"+type] = fn;
+	}
+}
+function loginza_init () {
 	var loginza_login_row = document.getElementById('user_login').parentNode.parentNode;
 	var loginza_tprofile = loginza_login_row.parentNode;
 
 	var loginza_new_tr = document.createElement("tr");
-	loginza_new_tr.innerHTML = '<th><label for="loginza_identity">Прикрепленный аккаунт:</label></th><td>%provider_ico%&nbsp;<b>%identity%</b> <a href="http://%loginza_host%/api/widget?token_url=%returnto_url%" class="loginza">изменить</a></td>';
-	
+	var loginza_new_th = document.createElement("th");
+	var loginza_new_td = document.createElement("td");
+	// заполняем ячейки
+	loginza_new_th.innerHTML = '<label for="loginza_identity">Прикрепленный аккаунт:</label>';
+	loginza_new_td.innerHTML = '%provider_ico%&nbsp;<b>%identity%</b> <a href="https://%loginza_host%/api/widget?token_url=%returnto_url%" class="loginza">изменить</a>';
+	// добавляем в строку
+	loginza_new_tr.appendChild(loginza_new_th);
+	loginza_new_tr.appendChild(loginza_new_td);
+	// прикрепляем к таблице, после логина
 	loginza_tprofile.insertBefore(loginza_new_tr, loginza_login_row.nextSibling);
+
 	LOGINZA.init();
 }
+// инициализация
+loginzaAddEvent(window, 'load', loginza_init);
 </script>
