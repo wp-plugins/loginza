@@ -20,7 +20,7 @@ Copyright 2010 Sergey Arsenichev  (email: s.arsenichev@protechs.ru)
 Plugin Name: loginza
 Plugin URI: http://loginza.ru/wp-plugin
 Description: Плагин позволяет использовать аккаунты популярных web сайтов (Вконтакте, Yandex, Google и тп. и OpenID) для авторизации в блоге. Разработан на основе сервиса Loginza.
-Version: 1.0.5
+Version: 1.0.6
 Author: Sergey Arsenichev
 Author URI: http://loginza.ru
 */
@@ -86,7 +86,7 @@ function loginza_ui_comment_form () {
   	
   	// данные для шаблона
   	$tpl_data = array(
-  		'returnto_url' => urlencode( get_option('siteurl').$_SERVER['REQUEST_URI'] ),
+  		'returnto_url' => urlencode( loginza_get_current_url() ),
   		'loginza_host' => LOGINZA_SERVER_HOST,
   		'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/'
   	);
@@ -138,7 +138,7 @@ function loginza_ui_user_profile () {
 			'provider_ico' => '',
 		);
 	}
-	$tpl_data['returnto_url'] = urlencode( get_option('siteurl').'/?loginza_mapping='.$user->ID.'&loginza_return='.urlencode($_SERVER['REQUEST_URI']) );
+	$tpl_data['returnto_url'] = urlencode( get_option('siteurl').'/?loginza_mapping='.$user->ID.'&loginza_return='.urlencode( loginza_get_current_url() ) );
 	$tpl_data['loginza_host'] = LOGINZA_SERVER_HOST;
 	echo loginza_fetch_template('html_edit_profile.tpl', $tpl_data);
 }
@@ -239,7 +239,7 @@ function loginza_form_tag ($message) {
 	if (!empty($message)) {
 		$tpl_data = array (
 			'loginza_host' => LOGINZA_SERVER_HOST, 
-			'returnto_url' => urlencode(get_option('siteurl')),
+			'returnto_url' => urlencode( loginza_get_current_url() ),
 			'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/'
 		);
 		$message .= loginza_fetch_template('html_widget_js.tpl', $tpl_data);
@@ -295,7 +295,7 @@ function loginza_token_request () {
 	}
 	
 	// получение профиля
-	$profile = file_get_contents(LOGINZA_API_AUTHINFO.'?token='.$_POST['token']);
+	$profile = loginza_api_request(LOGINZA_API_AUTHINFO.'?token='.$_POST['token']);
 	$profile = json_decode($profile);
 	
 	// проверка на ошибки
@@ -329,13 +329,58 @@ function loginza_token_request () {
   		wp_set_current_user($wpuid);
 	}
 	
-	if (!empty($_REQUEST['loginza_return'])) {
-		$return_to = $_REQUEST['loginza_return'];
+	if (!empty($_GET['loginza_return'])) {
+		$return_to = $_GET['loginza_return'];
 	} else {
-		$return_to = $_SERVER['REQUEST_URI'];
+		$return_to = loginza_get_current_url();
 	}
 	// редирект
-	wp_safe_redirect(get_option('siteurl').$return_to);
+	wp_safe_redirect($return_to);
 	die();
+}
+function loginza_get_current_url () {
+	$url = array();
+	// проверка https
+	if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']=='on') {
+		$url['sheme'] = "https";
+		$url['port'] = '443';
+	} else {
+		$url['sheme'] = 'http';
+		$url['port'] = '80';
+	}
+	// хост
+	$url['host'] = $_SERVER['HTTP_HOST'];
+	// если не стандартный порт
+	if (strpos($url['host'], ':') === false && $_SERVER['SERVER_PORT'] != $url['port']) {
+		$url['host'] .= ':'.$_SERVER['SERVER_PORT'];
+	}
+	// строка запроса
+	if (isset($_SERVER['REQUEST_URI'])) {
+		$url['request'] = $_SERVER['REQUEST_URI'];
+	} else {
+		$url['request'] = $_SERVER['SCRIPT_NAME'] . $_SERVER['PATH_INFO'];
+		$query = $_SERVER['QUERY_STRING'];
+		if (isset($query)) {
+		  $url['request'] .= '?'.$query;
+		}
+	}
+	
+	return $url['sheme'].'://'.$url['host'].$url['request'];
+}
+function loginza_api_request ($url) {
+	if ( function_exists('curl_init') ) {
+		$curl = curl_init($url);
+		$user_agent = 'Loginza-API/Wordpress'.get_bloginfo('version');
+		
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_HEADER, false);
+		curl_setopt($curl, CURLOPT_USERAGENT, $user_agent);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+		$raw_data = curl_exec($curl);
+		curl_close($curl);
+		return $raw_data;
+	} else {
+		return file_get_contents($url);
+	}
 }
 ?>

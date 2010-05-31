@@ -112,9 +112,7 @@ class LoginzaWpUser {
 	}
 	static function nicknameToLogin ($nickname) {
 		$nickname = strtr($nickname, self::$tran);
-		mb_internal_encoding('UTF-8');
-	    mb_regex_encoding ('UTF-8');
-	    return trim(mb_ereg_replace('[^\w]+', '-', $nickname), '-');
+	    return trim(preg_replace('/[^\w]+/i', '-', $nickname), '-');
 	}
 	private static function generateLogin ($identity) {
 		//$parts = parse_url($identity);

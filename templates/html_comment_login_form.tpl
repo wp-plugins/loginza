@@ -1,5 +1,5 @@
 <style>
-a.loginza:hover {text-decoration:none;}
+a.loginza:hover, a.loginza {text-decoration:none;}
 a.loginza img {border:0px;margin-right:3px;}
 </style>
 <script src="http://%loginza_host%/js/widget.js" type="text/javascript"></script>
