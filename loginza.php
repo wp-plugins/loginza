@@ -20,7 +20,7 @@ Copyright 2010 Sergey Arsenichev  (email: s.arsenichev@protechs.ru)
 Plugin Name: loginza
 Plugin URI: http://loginza.ru/wp-plugin
 Description: Плагин позволяет использовать аккаунты популярных web сайтов (Вконтакте, Yandex, Google и тп. и OpenID) для авторизации в блоге. Разработан на основе сервиса Loginza.
-Version: 1.0.6
+Version: 1.0.7
 Author: Sergey Arsenichev
 Author URI: http://loginza.ru
 */
@@ -306,19 +306,27 @@ function loginza_token_request () {
 	// получаем текущего пользователя
 	$WpUser = wp_get_current_user();
 	
+	// проверяем если данный идентификатор в базе
+	$wpuid = LoginzaWpUser::getUserByIdentity($profile->identity, $wpdb);
+	
+	// если юзер не найден, проверяем его по другим identity относящимся к нему
+	if (!$wpuid && is_array($profile->identities)) {
+		for ($i=0,$toi=count($profile->identities); $i<$toi; $i++) {
+			// поиск юзера
+			$wpuid = LoginzaWpUser::getUserByIdentity($profile->identities[$i], $wpdb);
+			// если юзер найден, прекращаем поиск, используем первый результат
+			if ($wpuid) break;
+		}
+	}
+	
 	// если юзер авторизирован, прикрепляем к нету его идентификатор
 	if ($WpUser->ID && @$_REQUEST['loginza_mapping'] == $WpUser->ID) {
-		// проверяем если данный идентификатор в базе
-		$wpuid = LoginzaWpUser::getUserByIdentity($profile->identity, $wpdb);
 		// такой идентификатор не прикреплен ни к кому
 		if (!$wpuid) {
 			// прикрепляем к нему идентификатор
 			LoginzaWpUser::setIdentity($WpUser->ID, $profile);
 		}
 	} elseif (!$WpUser->ID) {
-		// проверяем если данный идентификатор в базе
-		$wpuid = LoginzaWpUser::getUserByIdentity($profile->identity, $wpdb);
-		
 		if (!$wpuid) {
 			// идентификатора нет, новый пользователь
 			$wpuid = LoginzaWpUser::create($profile);

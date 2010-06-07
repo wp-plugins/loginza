@@ -4,7 +4,7 @@ Donate link: http://loginza.ru/wp-plugin
 Tags: openid, vkontakte, yandex, google, loginza, facebook, twitter, Rambler, Mail.Ru, LiveJournal, authentication, авторизация, вконтакте, widget
 Requires at least: 1.0
 Tested up to: 2.9.2
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 
 Плагин позволяет использовать аккаунты Вконтакте, Yandex, Google, OpenID и тп., для авторизации в блоге.
 
@@ -40,6 +40,9 @@ Stable tag: 1.0.6
 4. Просмотр и редактирование профиля. Изменение прикрепленного аккаунта.
 
 == Changelog ==
+
+= 1.0.7 =
+* Обновление связанное с добавлением нового параметра (identities) в Loginza.API. Обновление позволит пользователю mail.ru одинаково авторизироваться как через свой OpenID аккаунт, так и через аккаунт "Мой Мир".;
 
 = 1.0.6 =
 * Обновлен механизм обращения к Loginza.API (если установлена библиотека CURL, то будет использоваться для запросов к API);
