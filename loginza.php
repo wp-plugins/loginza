@@ -20,7 +20,7 @@ Copyright 2010 Sergey Arsenichev  (email: s.arsenichev@protechs.ru)
 Plugin Name: loginza
 Plugin URI: http://loginza.ru/wp-plugin
 Description: Плагин позволяет использовать аккаунты популярных web сайтов (Вконтакте, Yandex, Google и тп. и OpenID) для авторизации в блоге. Разработан на основе сервиса Loginza.
-Version: 1.0.7
+Version: 1.0.8
 Author: Sergey Arsenichev
 Author URI: http://loginza.ru
 */
@@ -211,7 +211,9 @@ function loginza_get_provider_ico ($identity) {
 	'diary.ru' => 'diary',
 	'bestpersons.ru' => 'bestpersons.png',
 	'facebook.com' => 'facebook.png',
-	'twitter.com' => 'twitter.png'
+	'twitter.com' => 'twitter.png',
+	'last.fm' => 'lastfm.png',
+	'lastfm.ru' => 'lastfm.png'
 	);
 	
 	if (preg_match('/^https?:\/\/([^\.]+\.)?([a-z0-9\-\.]+\.[a-z]{2,5})/i', $identity, $matches)) {
@@ -325,6 +327,38 @@ function loginza_token_request () {
 		if (!$wpuid) {
 			// прикрепляем к нему идентификатор
 			LoginzaWpUser::setIdentity($WpUser->ID, $profile);
+			
+			// обновление профиля
+			$update_data = array();
+			$update_data['ID'] = $WpUser->ID;
+			
+			// Отображать как
+			if ($profile->name->full_name) {
+				$update_data['display_name'] = $profile->name->full_name;
+				$name_parts = explode(" ", $profile->name->full_name);
+				// имя и фамилия по умолчанию
+				$update_data['first_name'] = $name_parts[0];
+				$update_data['last_name'] = $name_parts[1];
+			} elseif ($profile->name->first_name || $profile->name->last_name) {
+				$update_data['display_name'] = trim($profile->name->first_name.' '.$profile->name->last_name);
+				// Имя
+				if ($profile->name->first_name) {
+					$update_data['first_name'] = $profile->name->first_name;
+				}
+				// Фамилия
+				if ($profile->name->last_name) {
+					$update_data['last_name'] = $profile->name->last_name;
+				}
+			}
+			// если есть аватарка
+			if (!empty($profile->photo)) {
+				update_usermeta($WpUser->ID, LOGINZA_WP_USER_META_AVATAR, $profile->photo);
+			}
+			
+			// обновление юзера
+			if (count($update_data) > 1) {
+				wp_update_user($update_data);
+			}
 		}
 	} elseif (!$WpUser->ID) {
 		if (!$wpuid) {
