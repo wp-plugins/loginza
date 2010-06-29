@@ -25,7 +25,16 @@ function loginza_init () {
 	loginza_new_tr.appendChild(loginza_new_td);
 	// прикрепляем к таблице, после логина
 	loginza_tprofile.insertBefore(loginza_new_tr, loginza_login_row.nextSibling);
-
+	
+	// уведомление
+	try {
+		var message_message = document.createElement("div");
+		var message_field = document.getElementById('%loginza_field%');
+		message_message.style = 'color:red;'
+		message_message.innerHTML = '%loginza_message%';
+		message_field.parentNode.insertBefore(message_message, message_field.nextSibling);
+	} catch(e) {}
+	
 	LOGINZA.init();
 }
 // инициализация

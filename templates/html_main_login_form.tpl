@@ -37,7 +37,7 @@ function loginza_init_widget () {
 	
 	var loginza_header = document.createElement("div");
 	loginza_header.id = "loginza_header";
-	loginza_header.innerHTML ="<h3>Или войдите используя Ваш логин и пароль:</h3><br/>";
+	loginza_header.innerHTML ="<div style='color:red;'>%loginza_error%</div><h3>Или войдите используя Ваш логин и пароль:</h3><br/>";
 	
 	loginza_wp_login.insertBefore(loginza_header, loginza_wp_login.firstChild);
 	loginza_wp_login.insertBefore(loginza_iframe, loginza_wp_login.firstChild );

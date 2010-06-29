@@ -88,7 +88,7 @@ class LoginzaWpUser {
 		
 		// создаем пользователя
 		$wp_id = wp_insert_user($user_data);
-		if ($wp_id) {
+		if ( !is_wp_error($wp_id) && is_int($wp_id) ) {
 			self::setIdentity($wp_id, $profile);
 			// если есть аватарка
 			if (!empty($profile->photo)) {
@@ -114,7 +114,7 @@ class LoginzaWpUser {
 		$nickname = strtr($nickname, self::$tran);
 	    return trim(preg_replace('/[^\w]+/i', '-', $nickname), '-');
 	}
-	private static function generateLogin ($identity) {
+	static function generateLogin ($identity) {
 		//$parts = parse_url($identity);
 		//return self::nicknameToLogin ($parts['host'].$parts['path']);
 		return 'loginza'.self::shotmd5($identity);

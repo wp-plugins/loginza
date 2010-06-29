@@ -3,8 +3,8 @@ Contributors: arsenichev
 Donate link: http://loginza.ru/wp-plugin
 Tags: openid, vkontakte, yandex, google, loginza, facebook, twitter, Rambler, Mail.Ru, Last.fm, LiveJournal, authentication, авторизация, вконтакте, widget
 Requires at least: 1.0
-Tested up to: 2.9.2
-Stable tag: 1.0.8
+Tested up to: 3.0.0
+Stable tag: 1.0.9
 
 Плагин позволяет использовать аккаунты Вконтакте, Yandex, Google, OpenID и тп., для авторизации в блоге.
 
@@ -40,6 +40,10 @@ Stable tag: 1.0.8
 4. Просмотр и редактирование профиля. Изменение прикрепленного аккаунта.
 
 == Changelog ==
+
+= 1.0.9 =
+* Поддержка Wordpress 3.0.
+* Исправленны множественные инклуды файла widget.js на страницах блога.
 
 = 1.0.8 =
 * Добавлена поддержка авторизации через Last.fm;

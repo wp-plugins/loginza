@@ -20,7 +20,7 @@ Copyright 2010 Sergey Arsenichev  (email: s.arsenichev@protechs.ru)
 Plugin Name: loginza
 Plugin URI: http://loginza.ru/wp-plugin
 Description: Плагин позволяет использовать аккаунты популярных web сайтов (Вконтакте, Yandex, Google и тп. и OpenID) для авторизации в блоге. Разработан на основе сервиса Loginza.
-Version: 1.0.8
+Version: 1.0.9
 Author: Sergey Arsenichev
 Author URI: http://loginza.ru
 */
@@ -44,6 +44,7 @@ if (file_exists(LOGINZA_HOME_DIR.'wp-load.php')) {
   require_once(LOGINZA_HOME_DIR.'wp-config.php');
 }
 require_once(LOGINZA_HOME_DIR . 'wp-includes/registration.php');
+require_once(LOGINZA_HOME_DIR . 'wp-includes/pluggable.php');
 
 function loginza_json_support () {
 	if ( function_exists('json_decode') ) {
@@ -105,11 +106,19 @@ function loginza_ui_login_form () {
 	if($WpUser->ID) {
 		$return_to .= '/?loginza_mapping='.$WpUser->ID;
 	}
+	
+	// если есть ошибки
+	$loginza_error = '';
+	if (@$_GET['loginza_error'] == 'email'){
+	    $loginza_error = 'Аккаунт с данным email уже зарегистрирован. <br/>Войдите используя логин и пароль от этого аккаунта и Вы сможете прикрепить дополнительный аккаунт стороннего провайдера на странице профиля.<br/><br/>';
+	}
+	
 	// данные для шаблона
   	$tpl_data = array(
   		'returnto_url' => urlencode($return_to),
   		'loginza_host' => LOGINZA_SERVER_HOST,
-  		'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/'
+  		'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/',
+  		'loginza_error' => $loginza_error
   	);
 	echo loginza_fetch_template('html_main_login_form.tpl', $tpl_data);
 }
@@ -137,6 +146,11 @@ function loginza_ui_user_profile () {
 			'provider' => '',
 			'provider_ico' => '',
 		);
+	}
+	
+	if (@$_GET['loginza_message'] == 'email') {
+		$tpl_data['loginza_field'] = 'email';
+		$tpl_data['loginza_message'] = 'Ваш провайдер авторизации не передал Ваш email адрес. Пожалуйста заполните поле email, так как оно может понадобится для восстановления пароля.';
 	}
 	$tpl_data['returnto_url'] = urlencode( get_option('siteurl').'/?loginza_mapping='.$user->ID.'&loginza_return='.urlencode( loginza_get_current_url() ) );
 	$tpl_data['loginza_host'] = LOGINZA_SERVER_HOST;
@@ -244,7 +258,7 @@ function loginza_form_tag ($message) {
 			'returnto_url' => urlencode( loginza_get_current_url() ),
 			'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/'
 		);
-		$message .= loginza_fetch_template('html_widget_js.tpl', $tpl_data);
+		//$message .= loginza_fetch_template('html_widget_js.tpl', $tpl_data);
 		// [loginza]текст ссылки[/loginza]
 		$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\](.+)\[\/'.LOGINZA_FORM_TAG.'\]/is', '<a href="https://'.LOGINZA_SERVER_HOST.'/api/widget?token_url='.$tpl_data['returnto_url'].'" class="loginza">\1</a>', $message);
 		// [loginza:iframe]
@@ -361,14 +375,40 @@ function loginza_token_request () {
 			}
 		}
 	} elseif (!$WpUser->ID) {
+		// идентификатора нет
 		if (!$wpuid) {
-			// идентификатора нет, новый пользователь
-			$wpuid = LoginzaWpUser::create($profile);
-		}
-		
-		// авторизируем нового пользователя
-  		wp_set_auth_cookie($wpuid, true, false);
-  		wp_set_current_user($wpuid);
+			if (empty($profile->email)) {
+				// генерируем временный email
+				$profile->email = LoginzaWpUser::generateLogin($profile->identity).'@'.parse_url(get_option('siteurl'), PHP_URL_HOST);
+				
+				// требуется отредактировать email
+				$is_temporary_email = true;
+			}
+			
+			// если НЕ передан email ИЛИ email в БД не зарегистрирован
+			if (!email_exists($profile->email)) {
+				// новый пользователь
+				$wpuid = LoginzaWpUser::create($profile);
+			} else {
+				// редирект на страницу логина с ошибкой дубликата email
+				wp_safe_redirect(get_option('siteurl').'/wp-login.php?loginza_error=email');
+				die();
+			}
+	  	}
+	  	
+	  	// если пользователь вошел или зарегистрирован
+	  	if ($wpuid) {
+	  		// авторизируем нового пользователя
+  			wp_set_auth_cookie($wpuid, true, false);
+  			wp_set_current_user($wpuid);
+  			
+  			// если был установлен временный email
+  			if (@$is_temporary_email) {
+  				// редирект на страницу логина с ошибкой дубликата email
+				wp_safe_redirect(get_option('siteurl').'/wp-admin/profile.php?loginza_message=email');
+				die();
+  			}
+  		}
 	}
 	
 	if (!empty($_GET['loginza_return'])) {
