@@ -23,7 +23,7 @@ function loginza_init_widget () {
 	
 	var loginza_iframe = document.createElement("iframe");
 	loginza_iframe.id = "loginza_iframe";
-	loginza_iframe.src = "https://%loginza_host%/api/widget?overlay=wp_plugin&token_url=%returnto_url%";
+	loginza_iframe.src = "https://%loginza_host%/api/widget?overlay=wp_plugin&token_url=%returnto_url%&providers_set=%providers_set%&lang=%lang%";
 	loginza_iframe.style.display = "none";
 	loginza_iframe.style.width = "359px";
 	loginza_iframe.style.height = "300px";

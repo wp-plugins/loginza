@@ -19,7 +19,7 @@ function loginza_init () {
 	var loginza_new_td = document.createElement("td");
 	// заполняем ячейки
 	loginza_new_th.innerHTML = '<label for="loginza_identity">Прикрепленный аккаунт:</label>';
-	loginza_new_td.innerHTML = '%provider_ico%&nbsp;<b>%identity%</b> <a href="https://%loginza_host%/api/widget?token_url=%returnto_url%" class="loginza">изменить</a>';
+	loginza_new_td.innerHTML = '%provider_ico%&nbsp;<b>%identity%</b> <a href="https://%loginza_host%/api/widget?token_url=%returnto_url%&providers_set=%providers_set%&lang=%lang%" class="loginza">изменить</a>';
 	// добавляем в строку
 	loginza_new_tr.appendChild(loginza_new_th);
 	loginza_new_tr.appendChild(loginza_new_td);

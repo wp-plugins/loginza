@@ -4,7 +4,7 @@ Donate link: http://loginza.ru/wp-plugin
 Tags: openid, vkontakte, yandex, google, loginza, facebook, twitter, Rambler, Mail.Ru, Last.fm, LiveJournal, authentication, авторизация, вконтакте, widget
 Requires at least: 1.0
 Tested up to: 3.0.0
-Stable tag: 1.0.9
+Stable tag: 1.1.0
 
 Плагин позволяет использовать аккаунты Вконтакте, Yandex, Google, OpenID и тп., для авторизации в блоге.
 
@@ -32,6 +32,16 @@ Stable tag: 1.0.9
 
 Отключите плагин akismet, так как этот плагин помечает эти комментарии как спам.
 
+= После активации плагина не появились иконки в форме комментария, почему? =
+
+Возможно Вы используете тему, которая использует не стандартное обозначение формы комментариев. Что бы иконки появились в форме, нужно вручную добавить их в шаблон комментариев. HTML код иконок можно взять по адресу: http://loginza.ru/signin-integration (в коде в качестве значения token_url, вместо [RETURN_URL], укажите: <?=urlencode(loginza_get_current_url());?>).
+
+Например:
+<script src="http://loginza.ru/js/widget.js" type="text/javascript"></script>
+<a href="https://loginza.ru/api/widget?token_url=<?=urlencode(loginza_get_current_url());?>" class="loginza">
+    <img src="http://loginza.ru/img/sign_in_button_gray.gif" alt="Войти через loginza"/>
+</a>
+
 == Screenshots ==
 
 1. Окно авторизации используемое в плагине Loginza.
@@ -40,6 +50,9 @@ Stable tag: 1.0.9
 4. Просмотр и редактирование профиля. Изменение прикрепленного аккаунта.
 
 == Changelog ==
+
+= 1.1.0 =
+* Добавлен раздел настройки виджета в админ панели (меню "Настройка" -> "Loginza"). В данном разделе можно настроить набор кнопок виджета, их порядок, а так же задать язык интерфейса (предоставлены: Русский, Украинский и Английский).
 
 = 1.0.9 =
 * Поддержка Wordpress 3.0.
