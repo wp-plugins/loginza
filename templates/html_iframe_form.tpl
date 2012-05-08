@@ -1,2 +1,14 @@
-<div style="text-align:center;width:359px;padding:100px 0 100px 0;" id="loginza_loading"><img src="%img_dir%loading.gif" alt="Loading..."/></div>
-<iframe src="https://%loginza_host%/api/widget?overlay=wp_plugin&token_url=%returnto_url%&providers_set=%providers_set%&lang=%lang%" id="loginza_iframe" style="width:359px;height:300px;display:none;" scrolling="no" frameBorder="no" onload="this.style.display='';document.getElementById('loginza_loading').style.display='none';"></iframe>
+<script src="//%loginza_host%/js/widget-2.0.js" type="text/javascript"></script>
+<script type="text/javascript">
+	var widget_id = '%api_id%';
+    
+    // влключаем iframe-виджет
+    LOGINZA.Widget.setFrameMode();
+    LOGINZA.Widget.Params.token_url = '%returnto_url%';
+    LOGINZA.Widget.Params.providers_set = '%providers_set%';
+    LOGINZA.Widget.Params.lang = '%lang%';
+
+    // инициализация
+    LOGINZA.Widget.init(widget_id);
+</script>
+<div id="loginza"></div>

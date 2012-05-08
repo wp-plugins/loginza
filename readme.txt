@@ -3,8 +3,8 @@ Contributors: arsenichev
 Donate link: http://loginza.ru/wp-plugin
 Tags: openid, vkontakte, yandex, google, loginza, facebook, twitter, Rambler, Mail.Ru, Last.fm, LiveJournal, authentication, авторизация, вконтакте, widget
 Requires at least: 1.0
-Tested up to: 3.0.0
-Stable tag: 1.1.0
+Tested up to: 3.3.2
+Stable tag: 1.2.0
 
 Плагин позволяет использовать аккаунты Вконтакте, Yandex, Google, OpenID и тп., для авторизации в блоге.
 
@@ -18,13 +18,14 @@ Stable tag: 1.1.0
 * Существующие пользователи могут прикрепить к своему WordPress аккаунту учетную запись ВКонтакте, Yandex, Google, Rambler, OpenID и тп., и в дальнейшем авторизироваться в блоге с помощью неё (не используя логин/пароль аккаунта WordPress);
 * Плагин умеет получать дополнительные данные о пользователе из прикрепленного аккаунта (если они переданы провайдером) для использования их в профиле пользователя WordPress;
 * Иконки провайдера в комментариях (около имени пользователя), визуально отображают через какую учетную запись вошел пользователь;
-* Поддерживаются следующие провайдеры авторизации: Yandex, VKontakte, Loginza, Facebook, Twitter, MyOpenID, Google, Flickr, Last.fm, Mail.Ru, Rambler, Webmoney, AOL, VeriSign.
+* Поддерживаются следующие провайдеры авторизации: Yandex, VKontakte, Одноклассники, Loginza, Facebook, Twitter, MyOpenID, Google, Flickr, Last.fm, LinkedIn, Mail.Ru, Rambler, Webmoney, AOL, VeriSign.
 * Возможность вставки формы авторизации Loginza на любую страницу блога (используя template tag).
 
 == Installation ==
 
 1. Copy the `loginza` directory and its contents to your `/wp-content/plugins/` directory.
 2. Activate the loginza plugin through the 'Plugins' menu in WordPress
+3. Enter API settings through the 'Loginza' menu in WordPress
 
 == Frequently Asked Questions ==
 
@@ -42,6 +43,8 @@ Stable tag: 1.1.0
     <img src="http://loginza.ru/img/sign_in_button_gray.gif" alt="Войти через loginza"/>
 </a>
 
+Так же убедитесь что вы ввели настройки API в меню 'Loginza' в админском интерфейсе (http://вашблог/wp-admin/admin.php?page=LOGINZA).
+
 == Screenshots ==
 
 1. Окно авторизации используемое в плагине Loginza.
@@ -50,6 +53,17 @@ Stable tag: 1.1.0
 4. Просмотр и редактирование профиля. Изменение прикрепленного аккаунта.
 
 == Changelog ==
+
+= 1.2.0 =
+* Исправления для WP 3.x
+* Использована 2.0 версия виджета (http://loginza.ru/js-api)
+* Исправлен вывод аватарок в ленте комментариев
+* Настройка плагина в админке отдельным пунктом меню
+* Добавлены кнопки Одноклассники, LinkedIn, LiveJournal
+* Добавлены 2 языка (Белорусский и Французский)
+* Добавлена настройка ID и секретного ключа Loginza
+* Настройка цветовой схемы
+* Bugfix'ы и мелкие улучшения
 
 = 1.1.0 =
 * Добавлен раздел настройки виджета в админ панели (меню "Настройка" -> "Loginza"). В данном разделе можно настроить набор кнопок виджета, их порядок, а так же задать язык интерфейса (предоставлены: Русский, Украинский и Английский).

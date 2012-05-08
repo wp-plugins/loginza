@@ -20,20 +20,12 @@ Copyright 2010 Sergey Arsenichev  (email: s.arsenichev@protechs.ru)
 Plugin Name: loginza
 Plugin URI: http://loginza.ru/wp-plugin
 Description: Плагин позволяет использовать аккаунты популярных web сайтов (Вконтакте, Yandex, Google и тп. и OpenID) для авторизации в блоге. Разработан на основе сервиса Loginza.
-Version: 1.1.0
+Version: 1.2.0
 Author: Sergey Arsenichev
 Author URI: http://loginza.ru
 */
-// настройки
-define('LOGINZA_SERVER_HOST', 'loginza.ru');
-define('LOGINZA_API_AUTHINFO', 'http://'.LOGINZA_SERVER_HOST.'/api/authinfo');
-define('LOGINZA_HOME_DIR', dirname(dirname(dirname(dirname(__FILE__)))).'/');
-define('LOGINZA_PLUGIN_DIR', realpath(dirname(__FILE__)).'/');
-define('LOGINZA_TEMPLATES_DIR',LOGINZA_PLUGIN_DIR.'templates/');
-define('LOGINZA_FORM_TAG', 'loginza');
-// имена настроек
-define('LOGINZA_OPTIONS_LANG', 'loginza_lang');
-define('LOGINZA_OPTIONS_PROVIDERS_SET', 'loginza_providers_set');
+include_once( dirname( __FILE__ ) . '/loginza_config.php' );
+include_once( dirname( __FILE__ ) . '/loginza_functions.php');
 
 // рабочие классы
 require_once LOGINZA_PLUGIN_DIR.'LoginzaWpUser.class.php';
@@ -48,26 +40,6 @@ if (file_exists(LOGINZA_HOME_DIR.'wp-load.php')) {
 }
 require_once(LOGINZA_HOME_DIR . 'wp-includes/registration.php');
 require_once(LOGINZA_HOME_DIR . 'wp-includes/pluggable.php');
-
-function loginza_json_support () {
-	if ( function_exists('json_decode') ) {
-		return true;
-	}
-	// загружаем библиотеку работы с JSON если она необходима
-	if (!class_exists('Services_JSON')) {
-		include_once( dirname( __FILE__ ) . '/JSON.php' );
-	}
-	return false;
-}
-
-// если нету поддержки json
-if ( !loginza_json_support() ) {
-	// декодирует json в объект/массив
-	function json_decode($data) {
-        $json = new Services_JSON();
-        return $json->decode($data);
-    }
-}
 
 // инициализация плагина
 add_action('wp_footer', 'loginza_ui_comment_form');
@@ -91,13 +63,20 @@ function loginza_ui_comment_form () {
 	// если пользователь авторизирован, то форму не показываем
   	if($WpUser->ID) return;
   	
+  	$api_id = get_option(LOGINZA_OPTIONS_API_ID);
+  	$api_key = get_option(LOGINZA_OPTIONS_API_KEY);
+
+  	if (empty($api_id) || empty($api_key)) return;
+
   	// данные для шаблона
   	$tpl_data = array(
   		'returnto_url' => urlencode( loginza_get_current_url() ),
+  		'api_id' => $api_id,
   		'providers_set' => get_option(LOGINZA_OPTIONS_PROVIDERS_SET),
   		'lang' => get_option(LOGINZA_OPTIONS_LANG),
+  		'theme' => get_option(LOGINZA_OPTIONS_THEME),
   		'loginza_host' => LOGINZA_SERVER_HOST,
-  		'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/'
+  		'plugin_dir' => get_option('siteurl').'/wp-content/plugins/loginza/'
   	);
   	// модификация текущей формы авторизации
   	echo loginza_fetch_template('html_comment_login_form.tpl', $tpl_data);
@@ -108,6 +87,11 @@ function loginza_ui_comment_form () {
  *
  */
 function loginza_ui_login_form () {
+	$api_id = get_option(LOGINZA_OPTIONS_API_ID);
+  	$api_key = get_option(LOGINZA_OPTIONS_API_KEY);
+
+  	if (empty($api_id) || empty($api_key)) return;
+
 	$WpUser = wp_get_current_user();
 	
 	$return_to = get_option('siteurl');
@@ -124,11 +108,14 @@ function loginza_ui_login_form () {
 	// данные для шаблона
   	$tpl_data = array(
   		'returnto_url' => urlencode($return_to),
+  		'api_id' => $api_id,
   		'providers_set' => get_option(LOGINZA_OPTIONS_PROVIDERS_SET),
   		'lang' => get_option(LOGINZA_OPTIONS_LANG),
+  		'theme' => get_option(LOGINZA_OPTIONS_THEME),
   		'loginza_host' => LOGINZA_SERVER_HOST,
-  		'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/',
-  		'loginza_error' => $loginza_error
+  		//'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/',
+  		'loginza_error' => $loginza_error,
+  		'plugin_dir' => get_option('siteurl').'/wp-content/plugins/loginza/'
   	);
 	echo loginza_fetch_template('html_main_login_form.tpl', $tpl_data);
 }
@@ -139,6 +126,11 @@ function loginza_ui_login_form () {
  * @return unknown
  */
 function loginza_ui_user_profile () {
+	$api_id = get_option(LOGINZA_OPTIONS_API_ID);
+  	$api_key = get_option(LOGINZA_OPTIONS_API_KEY);
+
+  	if (empty($api_id) || empty($api_key)) return;
+
 	$user = wp_get_current_user();
 	if(!$user->ID) {
 		return false;
@@ -160,11 +152,13 @@ function loginza_ui_user_profile () {
 	
 	if (@$_GET['loginza_message'] == 'email') {
 		$tpl_data['loginza_field'] = 'email';
-		$tpl_data['loginza_message'] = 'Ваш провайдер авторизации не передал Ваш email адрес. Пожалуйста заполните поле email, так как оно может понадобится для восстановления пароля.';
+		$tpl_data['loginza_message'] = '<i style="color:red;">Ваш провайдер авторизации не передал Ваш email адрес. Пожалуйста заполните поле email, так как оно может понадобится для восстановления пароля.</i>';
 	}
 
 	$tpl_data['providers_set'] = get_option(LOGINZA_OPTIONS_PROVIDERS_SET);
+	$tpl_data['api_id'] = $api_id;
   	$tpl_data['lang'] = get_option(LOGINZA_OPTIONS_LANG);
+  	$tpl_data['theme'] = get_option(LOGINZA_OPTIONS_THEME);
 	$tpl_data['returnto_url'] = urlencode( get_option('siteurl').'/?loginza_mapping='.$user->ID.'&loginza_return='.urlencode( loginza_get_current_url() ) );
 	$tpl_data['loginza_host'] = LOGINZA_SERVER_HOST;
 	echo loginza_fetch_template('html_edit_profile.tpl', $tpl_data);
@@ -197,10 +191,26 @@ function loginza_comment_author_icon ($author) {
  * @return string
  */
 function loginza_comment_author_avatar ($avatar) {
-	global $comment;
+	//global $comment;
 	
-	// получаем аватар Loginza пользователя
-	$loginza_avatar = LoginzaWpUser::getAvatarByUser($comment->user_id);
+	if (in_the_loop() != false){
+		$zero = 0;
+		$comment = get_comment($zero);
+		if (!is_wp_error($comment->user_id)){
+		  $user = get_userdata($comment->user_id);
+		  if (!is_wp_error($user)){
+		    // получаем аватар Loginza пользователя
+			$loginza_avatar = LoginzaWpUser::getAvatarByUser($comment->user_id);
+		  }
+		}
+	} else {
+		$user = wp_get_current_user();
+		if (!is_wp_error($user)){
+			if($user->ID) {
+				$loginza_avatar = LoginzaWpUser::getAvatarByUser($user->ID);
+			}
+		}
+	}
 	
 	if (!empty($loginza_avatar)) {
 		return preg_replace('/src=([^\s]+)/i', 'src="'.$loginza_avatar.'"', $avatar);
@@ -240,7 +250,10 @@ function loginza_get_provider_ico ($identity) {
 	'facebook.com' => 'facebook.png',
 	'twitter.com' => 'twitter.png',
 	'last.fm' => 'lastfm.png',
-	'lastfm.ru' => 'lastfm.png'
+	'lastfm.ru' => 'lastfm.png',
+	'donoklassniki.ru' => 'donoklassniki.png',
+	'linkedin.com' => 'linkedin.png',
+	'livejournal.ru' => 'livejournal.png'
 	);
 	
 	if (preg_match('/^https?:\/\/([^\.]+\.)?([a-z0-9\-\.]+\.[a-z]{2,5})/i', $identity, $matches)) {
@@ -257,7 +270,7 @@ function loginza_get_provider_ico ($identity) {
 /**
  * Обработка тегов для вставки авторизации Loginza в страницы блога
  * Доступные теги:
- * [loginza]текст ссылки[/loginza]
+ * [loginza]текст ссылки[/loginza] - не поддерживается с версии 1.2.0
  * [loginza:iframe]
  * [loginza:icons]
  *
@@ -266,19 +279,27 @@ function loginza_get_provider_ico ($identity) {
  */
 function loginza_form_tag ($message) {
 	if (!empty($message)) {
-		$tpl_data = array (
-			'loginza_host' => LOGINZA_SERVER_HOST, 
-			'returnto_url' => urlencode( loginza_get_current_url() ),
-			'providers_set' => get_option(LOGINZA_OPTIONS_PROVIDERS_SET),
-			'lang' => get_option(LOGINZA_OPTIONS_LANG),
-			'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/'
-		);
-		// [loginza]текст ссылки[/loginza]
-		$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\](.+)\[\/'.LOGINZA_FORM_TAG.'\]/is', '<a href="https://'.LOGINZA_SERVER_HOST.'/api/widget?token_url='.$tpl_data['returnto_url'].'&providers_set='.$tpl_data['providers_set'].'&lang='.$tpl_data['lang'].'" class="loginza">\1</a>', $message);
-		// [loginza:iframe]
-		$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\:iframe\]/is', loginza_fetch_template('html_iframe_form.tpl', $tpl_data), $message);
-		// [loginza:icons]
-		$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\:icons\]/is', loginza_fetch_template('html_icons_form.tpl', $tpl_data), $message);
+		$api_id = get_option(LOGINZA_OPTIONS_API_ID);
+  		$api_key = get_option(LOGINZA_OPTIONS_API_KEY);
+
+  		if (!empty($api_id) && !empty($api_key)) {
+			$tpl_data = array (
+				'loginza_host' => LOGINZA_SERVER_HOST, 
+				'api_id' => $api_id,
+				'returnto_url' => urlencode( loginza_get_current_url() ),
+				'providers_set' => get_option(LOGINZA_OPTIONS_PROVIDERS_SET),
+				'lang' => get_option(LOGINZA_OPTIONS_LANG),
+				'theme' => get_option(LOGINZA_OPTIONS_THEME),
+				//'img_dir' => get_option('siteurl').'/wp-content/plugins/loginza/img/',
+				'plugin_dir' => get_option('siteurl').'/wp-content/plugins/loginza/'
+			);
+			// [loginza]текст ссылки[/loginza]
+			//$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\](.+)\[\/'.LOGINZA_FORM_TAG.'\]/is', '<a href="https://'.LOGINZA_SERVER_HOST.'/api/widget?token_url='.$tpl_data['returnto_url'].'&providers_set='.$tpl_data['providers_set'].'&lang='.$tpl_data['lang'].'&theme='.$tpl_data['theme'].'" class="loginza">\1</a>', $message);
+			// [loginza:iframe]
+			$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\:iframe\]/is', loginza_fetch_template('html_iframe_form.tpl', $tpl_data), $message);
+			// [loginza:icons]
+			$message = preg_replace('/\['.LOGINZA_FORM_TAG.'\:icons\]/is', loginza_fetch_template('html_icons_form.tpl', $tpl_data), $message);
+		}
 	}
 	return $message;
 }
@@ -323,9 +344,15 @@ function loginza_token_request () {
 	if (empty($_REQUEST['token'])) {
 		return;
 	}
-	
+	$api_id = get_option(LOGINZA_OPTIONS_API_ID);
+  	$api_key = get_option(LOGINZA_OPTIONS_API_KEY);
+
 	// получение профиля
-	$profile = loginza_api_request(LOGINZA_API_AUTHINFO.'?token='.$_POST['token']);
+	$profile = loginza_api_request(LOGINZA_API_AUTHINFO
+		.'?token='.$_POST['token']
+		.'&id='.$api_id
+		.'&sig='.md5($_POST['token'].$api_key)
+	);
 	$profile = json_decode($profile);
 	
 	// проверка на ошибки
@@ -417,11 +444,11 @@ function loginza_token_request () {
   			wp_set_current_user($wpuid);
   			
   			// если был установлен временный email
-  			if (@$is_temporary_email) {
+  			/*if (@$is_temporary_email) {
   				// редирект на страницу логина с ошибкой дубликата email
 				wp_safe_redirect(get_option('siteurl').'/wp-admin/profile.php?loginza_message=email');
 				die();
-  			}
+  			}*/
   		}
 	}
 	
@@ -463,33 +490,45 @@ function loginza_get_current_url () {
 	
 	return $url['sheme'].'://'.$url['host'].$url['request'];
 }
-function loginza_api_request ($url) {
-	if ( function_exists('curl_init') ) {
-		$curl = curl_init($url);
-		$user_agent = 'Loginza-API/Wordpress'.get_bloginfo('version');
-		
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl, CURLOPT_HEADER, false);
-		curl_setopt($curl, CURLOPT_USERAGENT, $user_agent);
-		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-		$raw_data = curl_exec($curl);
-		curl_close($curl);
-		return $raw_data;
-	} else {
-		return file_get_contents($url);
-	}
-}
 function loginza_admin_options () {
-	add_options_page('Loginza настройки', 'Loginza', 8, __FILE__, 'loginza_admin_page');
+	add_utility_page('Настройка Loginza', 'Loginza', 'administrator', 'LOGINZA', 'loginza_admin_page', WP_PLUGIN_URL.'/loginza/img/loginza.png');
+	return true;
 }
 function loginza_admin_url () {
-	return get_option('siteurl').'/wp-admin/options-general.php?page=loginza/loginza.php';
+	return get_option('siteurl').'/wp-admin/admin.php?page=LOGINZA';
 }
 function loginza_admin_page () {
 	// список доступных провайдеров
-	$aval_providers = array('google', 'yandex', 'mailruapi', 'vkontakte', 'facebook', 'twitter', 'loginza', 'myopenid', 'webmoney', 'rambler', 'flickr', 'lastfm', 'openid', 'mailru', 'verisign', 'aol', 'steam');
-	$aval_langs = array('ru' => 'Русский', 'uk' => 'Український', 'en' => 'English');
+	$aval_providers = array(
+		'google', 'yandex', 'mailruapi', 
+		'vkontakte', 'facebook', 'twitter', 
+		'loginza', 'myopenid', 'webmoney', 
+		'rambler', 'flickr', 'lastfm', 
+		'openid', 'mailru', 'verisign', 
+		'aol', 'steam', 'livejournal',
+		'odnoklassniki', 'linkedin'
+	);
+	$aval_langs = array(
+		'ru' => 'Русский', 
+		'uk' => 'Український',
+		'be' => 'Беларускі',
+		'en' => 'English',
+		'fr' => 'Français'
+	);
+
+	$aval_themes = array(
+		'grey' => 'Серая (Grey)'
+	);
 	
+	// сохранение настроек АПИ
+	if (isset($_POST['save_loginza_api'])) {
+		update_option(LOGINZA_OPTIONS_API_ID, intval(@$_POST['api_id']));
+		update_option(LOGINZA_OPTIONS_API_KEY, @$_POST['api_key']);
+
+		// сообщение
+		echo '<div class="updated"><p><strong>Настройки сохранены</strong></p></div>';
+	}
+
 	if (isset($_POST['save_loginza'])) {
 		// сохраняем список провайдеров
 		if (!empty($_POST['providers_set'])) {
@@ -519,6 +558,15 @@ function loginza_admin_page () {
 			}
 			update_option(LOGINZA_OPTIONS_LANG, $lang_option);
 		}
+
+		// сохранение темы
+		if (!empty($_POST['theme'])) {
+			$theme_option = '';
+			if (array_key_exists($_POST['theme'], $aval_themes)) {
+				$theme_option = $_POST['theme'];
+			}
+			update_option(LOGINZA_OPTIONS_THEME, $theme_option);
+		}
 		
 		// сообщение
 		echo '<div class="updated"><p><strong>Настройки сохранены</strong></p></div>';
@@ -526,7 +574,10 @@ function loginza_admin_page () {
 	// получение настроек
 	// данные для шаблона
 	$tpl_data = array();
-	$tpl_data['providers_set_avalible'] = $tpl_data['providers_set_saved'] = $tpl_data['lang'] = '';
+	$tpl_data['api_id'] = htmlspecialchars( get_option(LOGINZA_OPTIONS_API_ID) );
+	$tpl_data['api_key'] = htmlspecialchars( get_option(LOGINZA_OPTIONS_API_KEY) );
+
+	$tpl_data['providers_set_avalible'] = $tpl_data['providers_set_saved'] = $tpl_data['lang'] = $tpl_data['theme'] = '';
 	
 	// блок Провайдеры
 	// значение опции в настройках
@@ -561,7 +612,16 @@ function loginza_admin_page () {
 	foreach ($aval_langs as $lang => $lang_name) {
 		$tpl_data['lang'] .= '<option value="'.$lang.'" '.($lang == $lang_option ? 'selected="selected"' : '').'>'.$lang_name.'</option>';
 	}
-	
+
+	// блок Тема
+	$theme_option = get_option(LOGINZA_OPTIONS_THEME);
+	foreach ($aval_themes as $theme => $theme_name) {
+		$tpl_data['theme'] .= '<option value="'.$theme.'" '.($theme == $theme_option ? 'selected="selected"' : '').'>'.$theme_name.'</option>';
+	}
+		
+	$tpl_data['wp_plugin_url'] = WP_PLUGIN_URL;
+	$tpl_data['wp_domain'] = urlencode($_SERVER['HTTP_HOST']);
+
 	echo loginza_fetch_template('html_admin_options.tpl', $tpl_data);
 }
 ?>
