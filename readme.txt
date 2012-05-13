@@ -35,13 +35,13 @@ Stable tag: 1.2.0
 
 = После активации плагина не появились иконки в форме комментария, почему? =
 
-Возможно Вы используете тему, которая использует не стандартное обозначение формы комментариев. Что бы иконки появились в форме, нужно вручную добавить их в шаблон комментариев. HTML код иконок можно взять по адресу: http://loginza.ru/signin-integration (в коде в качестве значения token_url, вместо [RETURN_URL], укажите: <?=urlencode(loginza_get_current_url());?>).
+Возможно Вы используете тему, которая использует не стандартное обозначение формы комментариев. Что бы иконки появились в форме, нужно вручную добавить их в шаблон комментариев. HTML код иконок можно взять по адресу: http://loginza.ru/signin-integration (в коде в качестве значения token_url, вместо [RETURN_URL], укажите: &lt;?=urlencode(loginza_get_current_url());?&gt;).
 
 Например:
-<script src="http://loginza.ru/js/widget.js" type="text/javascript"></script>
-<a href="https://loginza.ru/api/widget?token_url=<?=urlencode(loginza_get_current_url());?>" class="loginza">
-    <img src="http://loginza.ru/img/sign_in_button_gray.gif" alt="Войти через loginza"/>
-</a>
+&lt;script src="http://loginza.ru/js/widget.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;a href="https://loginza.ru/api/widget?token_url=&lt;?=urlencode(loginza_get_current_url());?&gt;" class="loginza"&gt;
+    &lt;img src="http://loginza.ru/img/sign_in_button_gray.gif" alt="Войти через loginza"/&gt;
+&lt;/a&gt;
 
 Так же убедитесь что вы ввели настройки API в меню 'Loginza' в админском интерфейсе (http://вашблог/wp-admin/admin.php?page=LOGINZA).
 
@@ -66,7 +66,7 @@ Stable tag: 1.2.0
 * Bugfix'ы и мелкие улучшения
 
 = 1.1.0 =
-* Добавлен раздел настройки виджета в админ панели (меню "Настройка" -> "Loginza"). В данном разделе можно настроить набор кнопок виджета, их порядок, а так же задать язык интерфейса (предоставлены: Русский, Украинский и Английский).
+* Добавлен раздел настройки виджета в админ панели (меню "Настройка" -&gt; "Loginza"). В данном разделе можно настроить набор кнопок виджета, их порядок, а так же задать язык интерфейса (предоставлены: Русский, Украинский и Английский).
 
 = 1.0.9 =
 * Поддержка Wordpress 3.0.
@@ -95,7 +95,7 @@ Stable tag: 1.2.0
 
 = 1.0.3 =
 * Добавлена авторизация через Facebook;
-* Небольшие доработки совместимости со старыми версиями PHP < 5.2.0;
+* Небольшие доработки совместимости со старыми версиями PHP &lt; 5.2.0;
 
 = 1.0.2 =
 * Добавлена возможность вставки формы авторизации Loginza на страницы блога.
